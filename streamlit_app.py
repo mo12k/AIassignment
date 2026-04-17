@@ -23,9 +23,9 @@ CLUSTER_NAMES = {
 }
 
 CLUSTER_DESC = {
-    0: "Low income, low spending. Price-sensitive shoppers who respond well to discounts and deals.",
-    1: "High income, high spending. Premium customers worth targeting with exclusive offers and loyalty programs.",
-    2: "Middle income, moderate spending. The typical mall visitor, broad appeal.",
+    0: "Low income, low spending, often from younger or budget-limited age groups. Price-sensitive shoppers who respond well to discounts and deals.",
+    1: "High income, high spending, commonly from mature age groups with stronger purchasing power. Premium customers worth targeting with exclusive offers and loyalty programs.",
+    2: "Middle income, moderate spending, typically spread across working-age customers. The typical mall visitor with broad appeal.",
 }
 
 
