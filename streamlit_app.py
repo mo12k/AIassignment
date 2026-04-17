@@ -57,6 +57,80 @@ def predict_cluster(age, annual_income, spending_score, encoder, kmeans, scaler)
     return latent[0], cluster
 
 
+def render_feature_space_3d(age, annual_income, spending_score, predicted_cluster, encoder, kmeans, scaler):
+    try:
+        import plotly.graph_objects as go
+    except ImportError:
+        st.caption("3D chart requires plotly. Install with: pip install plotly")
+        return
+
+    rng = np.random.default_rng(42)
+    sample_size = 450
+
+    sample_points = np.column_stack(
+        [
+            rng.uniform(12.0, 100.0, sample_size),
+            rng.uniform(0.0, 500_000.0, sample_size),
+            rng.uniform(1.0, 100.0, sample_size),
+        ]
+    ).astype(np.float32)
+
+    sample_scaled = scaler.transform(sample_points)
+    sample_latent = encoder.predict(sample_scaled, verbose=0)
+    sample_clusters = kmeans.predict(sample_latent)
+
+    colors = {
+        0: "#1f77b4",
+        1: "#d62728",
+        2: "#2ca02c",
+    }
+
+    fig = go.Figure()
+    for cluster_id in sorted(np.unique(sample_clusters)):
+        mask = sample_clusters == cluster_id
+        fig.add_trace(
+            go.Scatter3d(
+                x=sample_points[mask, 0],
+                y=sample_points[mask, 1],
+                z=sample_points[mask, 2],
+                mode="markers",
+                name=CLUSTER_NAMES.get(int(cluster_id), f"Segment {cluster_id}"),
+                marker={
+                    "size": 3,
+                    "opacity": 0.35,
+                    "color": colors.get(int(cluster_id), "#7f7f7f"),
+                },
+            )
+        )
+
+    fig.add_trace(
+        go.Scatter3d(
+            x=[age],
+            y=[annual_income],
+            z=[spending_score],
+            mode="markers",
+            name=f"Your customer ({CLUSTER_NAMES.get(predicted_cluster, f'Segment {predicted_cluster}')})",
+            marker={
+                "size": 10,
+                "color": colors.get(predicted_cluster, "#111111"),
+                "symbol": "diamond",
+                "line": {"width": 2, "color": "#111111"},
+            },
+        )
+    )
+
+    fig.update_layout(
+        height=650,
+        margin={"l": 0, "r": 0, "b": 0, "t": 40},
+        scene={
+            "xaxis_title": "Age",
+            "yaxis_title": "Annual Income (RM)",
+            "zaxis_title": "Spending Score",
+        },
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Mall Customer Segment Predictor",
@@ -113,10 +187,21 @@ if submitted:
     st.divider()
     st.subheader("Prediction Result")
     st.success(f"**Predicted Segment:** {cluster_name}")
-    st.info(cluster_desc)
+    st.info(cluster_desc)   
 
     st.markdown("**Latent vector (compressed representation):**")
     st.code(np.array2string(latent_vector.round(4), precision=4))
+
+    st.markdown("**3D customer-space visualisation:**")
+    render_feature_space_3d(
+        age=age,
+        annual_income=annual_income,
+        spending_score=spending_score,
+        predicted_cluster=predicted_cluster,
+        encoder=encoder_model,
+        kmeans=kmeans_model,
+        scaler=scaler_model,
+    )
 
     st.markdown(
         """
