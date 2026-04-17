@@ -9,7 +9,7 @@ from joblib import load
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 
-ENCODER_PATH = DATA_DIR / "encoder_model.keras"
+ENCODER_PATH = BASE_DIR / "encoder_model.keras"
 KMEANS_PATH = BASE_DIR / "autoencoder_kmeans.joblib"
 SCALER_PATH = BASE_DIR / "scaler.joblib"
 
